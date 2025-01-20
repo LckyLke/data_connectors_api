@@ -3,7 +3,7 @@ from requests.auth import HTTPBasicAuth
 import json
 import os
 
-# Replace with your details
+
 api_token = os.getenv("CONFLUENCE_API_TOKEN")
 email = "lukefriedrichs@gmail.com"
 
