@@ -1,26 +1,45 @@
-import requests
-from requests.auth import HTTPBasicAuth
 import json
-import os
 
+from confluence_api.api_client import ConfluenceAPIClient
+from confluence_api.pages import get_all_pages, get_page_data
+from confluence_api.spaces import get_all_spaces
 
-api_token = os.getenv("CONFLUENCE_API_TOKEN")
-email = "lukefriedrichs@gmail.com"
+def main():
+    # 1. Initialize the Confluence client
+    client = ConfluenceAPIClient()
 
-url = "https://lukefriedrichs.atlassian.net/wiki/api/v2/pages"
+    # 2. Fetch all pages
+    print("Fetching pages...")
+    pages = get_all_pages(client, limit=100)
+    print(f"Total pages found: {len(pages)}")
 
-auth = HTTPBasicAuth(email, api_token)
+    # 3. For each page, fetch expanded page data
+    knowledge_base = []
+    for page in pages:
+        page_id = page.get("id")
+        title = page.get("title")
 
-headers = {
-  "Accept": "application/json"
-}
+        page_expanded_data = get_page_data(client, page_id)
+        if page_expanded_data:
+            kb_entry = {
+                "id": page_id,
+                "title": title,
+                "full_data": page_expanded_data
+            }
+            knowledge_base.append(kb_entry)
+            print(f"Fetched expanded data for page '{title}' (ID: {page_id})")
 
-response = requests.request(
-   "GET",
-   url,
-   headers=headers,
-   auth=auth
-)
+    # 4. Print or store the knowledge base
+    for kb_item in knowledge_base:
+        print(json.dumps(kb_item, indent=2, sort_keys=True))
 
-print(json.dumps(json.loads(response.text), sort_keys=True, indent=4, separators=(",", ": ")))
+    # 5. Example: fetching spaces
+    print("Fetching spaces...")
+    spaces = get_all_spaces(client, limit=50)
+    print(f"Total spaces found: {len(spaces)}")
 
+    for space in spaces:
+        print(f"Space name: {space.get('name')}, Key: {space.get('key')}")
+
+if __name__ == "__main__":
+    main()
