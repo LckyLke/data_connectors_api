@@ -47,6 +47,6 @@ A Python project that provides a interface for interacting with the Confluence R
 In the project’s root directory:
 
 ```bash
-python confluence_api/main.py
+python main.py
 ```
 
