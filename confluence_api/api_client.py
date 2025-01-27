@@ -77,7 +77,7 @@ class ConfluenceAPIClient:
         
         return results
 
-    # Example specific methods for common endpoints
+    #Specific example methods
     def get_all_pages(self, params=None):
         return self.get_paginated('/pages', params=params)
     

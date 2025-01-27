@@ -1,6 +1,6 @@
 # Confluence API
 
-A Python project that provides a interface for interacting with the Confluence REST API (v2). 
+A Python project that provides an interface for interacting with the Confluence REST API (v2). 
 ---
 
 ## Installation
@@ -31,22 +31,29 @@ A Python project that provides a interface for interacting with the Confluence R
 
 1. **Set Environment Variables**:
 
-   You can set these in your shell or in an optional `.env` file:
+   You can set these in an `.env` file:
    ```bash
    CONFLUENCE_API_TOKEN=<your-token>
    CONFLUENCE_EMAIL=<your-email>
    CONFLUENCE_DOMAIN=<your-domain>.atlassian.net
    ```
-   If you use a `.env` file, the project uses `python-dotenv` to automatically load them.
-
 
 ---
 
 ## Usage
 
-In the project’s root directory:
+### Basic Examples
 
 ```bash
-python main.py
-```
+# Get all pages
+fetchconf --endpoint /pages
 
+# Fetch blog posts
+fetchconf --endpoint /blogposts
+
+# Get attachments for page ID 123
+fetchconf --endpoint '/pages/{id}/attachments' --id 123
+
+# List spaces with query parameters
+fetchconf --endpoint /spaces --param limit=50 --param status=current
+```

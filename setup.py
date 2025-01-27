@@ -10,4 +10,9 @@ setup(
         "requests",
         "python-dotenv"
     ],
+    entry_points={
+        'console_scripts': [
+            'fetchconf=scripts.run:main',
+        ],
+    },
 )
