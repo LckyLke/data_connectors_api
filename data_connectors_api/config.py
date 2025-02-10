@@ -17,3 +17,6 @@ SLACK_REFRESH_TOKEN = os.getenv("SLACK_REFRESH_TOKEN")
 
 # Notion
 NOTION_SECRET = os.getenv("NOTION_SECRET")
+
+
+GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")

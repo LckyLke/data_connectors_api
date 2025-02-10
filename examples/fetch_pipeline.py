@@ -8,14 +8,12 @@ def run_data_pipeline():
         "notion": NotionAPIClient()
     }
 
-    # Extract phase
     data_sources = {
         "confluence_pages": clients['confluence'].get_all_pages(),
         "slack_channels": clients['slack'].list_channels(),
         "notion_databases": clients['notion'].get_databases()
     }
 
-    # Transform phase
     analytics = {
         "content_stats": {
             "total_pages": len(data_sources['confluence_pages']),
@@ -31,7 +29,6 @@ def run_data_pipeline():
         }
     }
 
-    # Load phase
     clients['notion'].save_to_json(
         analytics, 
         f"analytics_{datetime.now().date().isoformat()}.json"

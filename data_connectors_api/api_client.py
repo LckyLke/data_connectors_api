@@ -13,7 +13,7 @@ from typing import Optional, List, Dict
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-from confluence_api.config import (
+from data_connectors_api.config import (
     CONFLUENCE_API_TOKEN, CONFLUENCE_EMAIL, CONFLUENCE_DOMAIN,
     SLACK_API_TOKEN, NOTION_SECRET
 )
@@ -187,78 +187,3 @@ class SlackAPIClient(BaseAPIClient):
 
     def get_users(self):
         return self.get_paginated('/users.list', 'members')
-
-class NotionAPIClient(BaseAPIClient):
-    def __init__(self, api_secret=None):
-        self.api_secret = api_secret or NOTION_SECRET
-        self.base_url = "https://api.notion.com/v1"
-        self.headers = {
-            "Authorization": f"Bearer {self.api_secret}",
-            "Notion-Version": "2022-06-28",
-            "Content-Type": "application/json"
-        }
-        self.session = requests.Session()
-        self.session.headers.update(self.headers)
-        
-        retry = Retry(
-            total=3,
-            backoff_factor=1,
-            status_forcelist=[429, 500, 502, 503, 504]
-        )
-        self.session.mount('https://', HTTPAdapter(max_retries=retry))
-
-    def _process_database(self, database):
-        return {
-            "id": database.get("id"),
-            "title": self._extract_title(database.get("title", [])),
-            "created_time": database.get("created_time"),
-            "last_edited_time": database.get("last_edited_time"),
-            "url": database.get("url")
-        }
-
-    def _extract_title(self, title_objects):
-        return "".join([t.get("plain_text", "") for t in title_objects])
-
-    def save_database(self, database_id, json_file=None, csv_file=None):
-        pages = self.query_database(database_id)
-        json_path = self.save_to_json(pages, json_file)
-        processed = [self._process_database(p) for p in pages]
-        csv_path = self.save_to_csv(processed, csv_file, ['id','title','created_time','last_edited_time','url'])
-        return json_path, csv_path
-
-    def _request(self, method, endpoint, data=None):
-        response = self.session.request(method, f"{self.base_url}{endpoint}", json=data)
-        response.raise_for_status()
-        return response.json()
-
-    def post_paginated(self, endpoint, data=None):
-        results = []
-        has_more = True
-        next_cursor = None
-        
-        while has_more:
-            payload = data.copy() if data else {}
-            if next_cursor:
-                payload["start_cursor"] = next_cursor
-            response = self._request('POST', endpoint, payload)
-            results.extend(response.get("results", []))
-            has_more = response.get("has_more", False)
-            next_cursor = response.get("next_cursor")
-        return results
-
-    def get_databases(self):
-        return self.post_paginated("/search", {"filter": {"property": "object", "value": "database"}})
-
-    def query_database(self, database_id):
-        return self.post_paginated(f"/databases/{database_id}/query", {"page_size": 100})
-
-    def get_users(self):
-        results = []
-        params = {}
-        while True:
-            response = self._request('GET', '/users', params=params)
-            results.extend(response.get("results", []))
-            if not response.get("has_more"):
-                break
-            params["start_cursor"] = response.get("next_cursor")
-        return results
