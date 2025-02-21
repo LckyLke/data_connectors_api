@@ -1,6 +1,6 @@
 import argparse
 import json
-from confluence_api.api_client import ConfluenceAPIClient
+from data_connectors_api.api_client import ConfluenceAPIClient
 
 def main():
     """Command-line interface for Confluence API with flexible endpoint support."""
